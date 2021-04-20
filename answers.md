@@ -37,4 +37,26 @@ process_client
 http_request_headers
 ```
 
+## Part 3:
+### Challenge
 
+The attack builds on ```exploit-4.py```, and consists of creating the following structure in the stack:
+
+```
+| str     |
+| &unlink |   
+| &str    |
+| &gadget | <- overwritten return address of the call to http_request_headers
+```
+
+So, by the time ```http_request_headers``` returns, the gadget will be executed, and will pop the string's address (which points to the path of the file that we want to unlink) into %rdi, and, when returning, it will execute unlink.
+
+The **gadget** is ```pop %rdi; ret```, and has machine code ```5f c3```.
+
+It can be found in the web server's binary in two different ways:
+
+1) manually, by looking through the output of ```objdump -D zookd-nxstack | less```
+
+2) automatically, by executing ```ROPgadget --binary zookd-nxstack | grep rdi | grep ret```
+
+However, the gadget's address as obtained above is incorrect; this can be fixed by looking at the address of the function that contains it, ```__libc_csu_init```, when running in gdb, and adjust it accordingly.
