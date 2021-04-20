@@ -117,8 +117,3 @@ static void process_client(int fd)
 
     close(fd);
 }
-
-void accidentally(void)
-{
-       __asm__("mov 16(%%rbp), %%rdi": : :"rdi");
-}
